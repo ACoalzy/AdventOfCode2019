@@ -10,22 +10,15 @@ object Day4 extends DayN {
   }
 
   case object AlwaysIncreasing extends Filter[String] {
-    override def apply(s: String): Boolean =
-      if (s.length > 1) 1 until s.length forall (i => s.charAt(i) >= s.charAt(i - 1))
-      else true
+    override def apply(s: String): Boolean = s.zip(s.drop(1)) forall (cs => cs._1 <= cs._2)
   }
 
   case object ContainsAdjacentPair extends Filter[String] {
-    override def apply(s: String): Boolean =
-      if (s.length > 1) 1 until s.length exists (i => s.charAt(i) == s.charAt(i - 1))
-      else false
+    override def apply(s: String): Boolean = s.zip(s.drop(1)) exists (cs => cs._1 == cs._2)
   }
 
   case object ContainsExclusivePair extends Filter[String] {
-    override def apply(s: String): Boolean = {
-      val chars = s.toSet
-      chars.map(c => s.count(_ == c)).contains(2)
-    }
+    override def apply(s: String): Boolean = s.groupBy(identity).values.exists(_.length == 2)
   }
 
   def validate[A](a: A)(rules: List[Filter[A]]): Boolean = rules.forall(_ (a))
