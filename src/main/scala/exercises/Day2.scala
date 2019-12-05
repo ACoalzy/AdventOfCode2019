@@ -11,11 +11,11 @@ object Day2 extends DayN {
     def loop(state: State): Vector[Int] = {
       val next = state.ints(state.index) match {
         case 99 => None
-        case 1 => Some(Add(state)())
-        case 2 => Some(Multiply(state)())
+        case 1 => Some(Add(state))
+        case 2 => Some(Multiply(state))
       }
 
-      next match {
+      next.map(_.run) match {
         case None => state.ints
         case Some(s) => loop(s)
       }

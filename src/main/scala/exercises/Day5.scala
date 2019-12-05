@@ -3,6 +3,8 @@ package exercises
 import intcode._
 import util.DayN
 
+import scala.io.StdIn
+
 object Day5 extends DayN {
   override val num = 5
 
@@ -28,21 +30,24 @@ object Day5 extends DayN {
 
     val commanded = op match {
       case 99 => None
-      case 1 => Some(Add)
-      case 2 => Some(Multiply)
-      case 3 => Some(Input)
-      case 4 => Some(Output)
-      case 5 => Some(JumpIfTrue)
-      case 6 => Some(JumpIfFalse)
-      case 7 => Some(LessThan)
-      case 8 => Some(Equals)
+      case 1 => Some(Add(state, modes))
+      case 2 => Some(Multiply(state, modes))
+      case 3 => {
+        println("Please input an int:")
+        val v = StdIn.readInt()
+        Some(Input(state, modes, v))
+      }
+      case 4 => Some(Output(state, modes))
+      case 5 => Some(JumpIfTrue(state, modes))
+      case 6 => Some(JumpIfFalse(state, modes))
+      case 7 => Some(LessThan(state, modes))
+      case 8 => Some(Equals(state, modes))
     }
 
-    commanded.map(_(state)(modes))
+    commanded.map(_.run())
   }
 
   val input: Vector[Int] = lines.head.split(",").map(_.toInt).toVector
-//  val input: Vector[Int] = Vector(3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9)
 
   part1(intCodeRunner(input)) // input 1
   part2(intCodeRunner(input)) // input 5

@@ -1,15 +1,17 @@
 package intcode
 
-import scala.io.StdIn
-
 sealed trait Command {
   def size: Int
+  protected def modes: Seq[ParameterMode]
+  protected def s: State
 
-  def shift(i: Int) = i + size
+  protected def newIndex(i : Int): Int = i + size
 
-  def apply(s: State)(modes: Seq[ParameterMode] = Seq()): State
+  protected def newInts(i: Int, ints: Vector[Int]): Vector[Int] = ints
 
-  protected def mode(modes: Seq[ParameterMode])(i: Int) = modes.lift(i).getOrElse(PositionMode)
+  protected def m(i: Int) = modes.lift(i).getOrElse(PositionMode)
+
+  def run(): State = State(newIndex(s.index), newInts(s.index, s.ints))
 }
 
 sealed trait MathsCommand extends Command {
@@ -17,59 +19,58 @@ sealed trait MathsCommand extends Command {
 
   protected def op: (Int, Int) => Int
 
-  override def apply(s: State)(modes: Seq[ParameterMode]): State = {
-    val m = mode(modes)_
-    State(shift(s.index), s.threeIntOp(m(0), m(1), m(2))(op))
-  }
+  override protected def newInts(i: Int, ints: Vector[Int]): Vector[Int] =
+    ints.updated(m(2).index(ints)(i + 3), op(m(0).value(ints)(i + 1), m(1).value(ints)(i + 2)))
 }
 
-case object Add extends MathsCommand {
+case class Add(s: State, modes: Seq[ParameterMode] = Seq()) extends MathsCommand {
   val op = _ + _
 }
 
-case object Multiply extends MathsCommand {
+case class Multiply(s: State, modes: Seq[ParameterMode] = Seq()) extends MathsCommand {
   val op = _ * _
 }
 
-case object LessThan extends MathsCommand {
+case class LessThan(s: State, modes: Seq[ParameterMode] = Seq()) extends MathsCommand {
   val op = (l, r) => if (l < r) 1 else 0
 }
 
-case object Equals extends MathsCommand {
+case class Equals(s: State, modes: Seq[ParameterMode] = Seq()) extends MathsCommand {
   val op = (l, r) => if (l == r) 1 else 0
 }
 
-case object Input extends Command {
+case class Input(s: State, modes: Seq[ParameterMode] = Seq(), v: Int) extends Command {
   val size = 2
 
-  override def apply(s: State)(modes: Seq[ParameterMode] = Seq()): State = {
-    println("Please input an int:")
-    val v = StdIn.readInt()
-    State(shift(s.index), s.store(v)(mode(modes)(0)))
+  override protected def newInts(i: Int, ints: Vector[Int]): Vector[Int] = {
+    ints.updated(m(0).index(ints)(i + 1), v)
   }
 }
 
-case object Output extends Command {
+case class Output(s: State, modes: Seq[ParameterMode] = Seq()) extends Command {
   val size = 2
 
-  override def apply(s: State)(modes: Seq[ParameterMode] = Seq()) = {
-    println(mode(modes)(0).value(s.ints)(s.index + 1))
-    s.copy(index = shift(s.index))
+  override def run(): State = {
+    println(m(0).value(s.ints)(s.index + 1))
+    State(newIndex(s.index), newInts(s.index, s.ints))
   }
 }
 
-case object JumpIfTrue extends Command {
+sealed trait JumpIf extends Command {
   val size = 3
 
-  override def apply(s: State)(modes: Seq[ParameterMode] = Seq()): State = {
-    s.copy(index = s.jumpIf(mode(modes)(0), mode(modes)(1))(_ != 0, size))
+  protected def jump(i: Int)(condition: Int => Boolean): Int = {
+    val left = m(0).value(s.ints)(i + 1)
+    lazy val right = m(1).value(s.ints)(i + 2)
+
+    if (condition(left)) right else i + size
   }
 }
 
-case object JumpIfFalse extends Command {
-  val size = 3
+case class JumpIfTrue(s: State, modes: Seq[ParameterMode] = Seq()) extends JumpIf {
+  override protected def newIndex(i :Int): Int = jump(i)(_ != 0)
+}
 
-  override def apply(s: State)(modes: Seq[ParameterMode] = Seq()): State = {
-    s.copy(index = s.jumpIf(mode(modes)(0), mode(modes)(1))(_ == 0, size))
-  }
+case class JumpIfFalse(s: State, modes: Seq[ParameterMode] = Seq()) extends JumpIf {
+  override protected def newIndex(i :Int): Int = jump(i)(_ == 0)
 }
