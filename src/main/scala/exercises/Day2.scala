@@ -21,7 +21,7 @@ object Day2 extends DayN {
       }
     }
 
-    loop(State(0, setupNounAndVerb(noun, verb, ints))).head
+    loop(State(0, setupNounAndVerb(noun, verb, ints), List())).head
   }
 
   def nounVerbFinder(lowerLimit: Int, upperLimit: Int, target: Int, ints: Vector[Int]): Option[(Int, Int)] = {

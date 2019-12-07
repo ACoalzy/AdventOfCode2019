@@ -11,7 +11,15 @@ sealed trait Command {
 
   protected def m(i: Int) = modes.lift(i).getOrElse(PositionMode)
 
-  def run(): State = State(newIndex(s.index), newInts(s.index, s.ints))
+  def run(): State = State(newIndex(s.index), newInts(s.index, s.ints), s.input, s.output)
+}
+
+case class Finish(s: State) extends Command {
+  override def size: Int = 0
+
+  override protected def modes: Seq[ParameterMode] = Nil
+
+  override def run(): State = State(newIndex(s.index), newInts(s.index, s.ints), s.input, s.output, true)
 }
 
 sealed trait MathsCommand extends Command {
@@ -39,20 +47,23 @@ case class Equals(s: State, modes: Seq[ParameterMode] = Seq()) extends MathsComm
   val op = (l, r) => if (l == r) 1 else 0
 }
 
-case class Input(s: State, modes: Seq[ParameterMode] = Seq(), v: Int) extends Command {
+case class Input(s: State, modes: Seq[ParameterMode] = Seq()) extends Command {
   val size = 2
 
   override protected def newInts(i: Int, ints: Vector[Int]): Vector[Int] = {
-    ints.updated(m(0).index(ints)(i + 1), v)
+    ints.updated(m(0).index(ints)(i + 1), s.input.head)
   }
+
+  override def run(): State =
+    State(newIndex(s.index), newInts(s.index, s.ints), s.input.drop(1), s.output)
 }
 
 case class Output(s: State, modes: Seq[ParameterMode] = Seq()) extends Command {
   val size = 2
 
   override def run(): State = {
-    println(m(0).value(s.ints)(s.index + 1))
-    State(newIndex(s.index), newInts(s.index, s.ints))
+    val value = m(0).value(s.ints)(s.index + 1)
+    State(newIndex(s.index), newInts(s.index, s.ints), s.input.drop(1), value :: s.output)
   }
 }
 

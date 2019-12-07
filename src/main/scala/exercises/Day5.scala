@@ -3,22 +3,20 @@ package exercises
 import intcode._
 import util.DayN
 
-import scala.io.StdIn
-
 object Day5 extends DayN {
   override val num = 5
 
-  def intCodeRunner(ints: Vector[Int]): Int = {
+  def intCodeRunner(ints: Vector[Int], inputs: List[Int]): State = {
     @annotation.tailrec
-    def loop(state: State): Vector[Int] = {
+    def loop(state: State): State = {
       val opcode = state.ints(state.index)
       manageOp(opcode)(state) match {
-        case None => state.ints
+        case None => state
         case Some(s) => loop(s)
       }
     }
 
-    loop(State(0, ints)).head
+    loop(State(0, ints, inputs))
   }
 
   private def manageOp(code: Int)(state: State): Option[State] = {
@@ -32,11 +30,7 @@ object Day5 extends DayN {
       case 99 => None
       case 1 => Some(Add(state, modes))
       case 2 => Some(Multiply(state, modes))
-      case 3 => {
-        println("Please input an int:")
-        val v = StdIn.readInt()
-        Some(Input(state, modes, v))
-      }
+      case 3 => Some(Input(state, modes))
       case 4 => Some(Output(state, modes))
       case 5 => Some(JumpIfTrue(state, modes))
       case 6 => Some(JumpIfFalse(state, modes))
@@ -49,6 +43,6 @@ object Day5 extends DayN {
 
   val input: Vector[Int] = lines.head.split(",").map(_.toInt).toVector
 
-  part1(intCodeRunner(input)) // input 1
-  part2(intCodeRunner(input)) // input 5
+  part1(intCodeRunner(input, List(1)).output.head)
+  part2(intCodeRunner(input, List(5)).output.head)
 }
