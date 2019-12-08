@@ -1,7 +1,9 @@
 package exercises
 
-import intcode.{Add, Multiply, State}
+import intcode.{IntCode, State}
 import util.DayN
+
+import scala.collection.immutable.Queue
 
 object Day2 extends DayN {
   override val num = 2
@@ -9,19 +11,13 @@ object Day2 extends DayN {
   def intCodeRunner(noun: Int, verb: Int, ints: Vector[Int]): Int = {
     @annotation.tailrec
     def loop(state: State): Vector[Int] = {
-      val next = state.ints(state.index) match {
-        case 99 => None
-        case 1 => Some(Add(state))
-        case 2 => Some(Multiply(state))
-      }
-
-      next.map(_.run) match {
-        case None => state.ints
-        case Some(s) => loop(s)
+      IntCode.step(state) match {
+        case s if s.finished => state.ints
+        case s => loop(s)
       }
     }
 
-    loop(State(0, setupNounAndVerb(noun, verb, ints), List())).head
+    loop(State(0, setupNounAndVerb(noun, verb, ints), Queue())).head
   }
 
   def nounVerbFinder(lowerLimit: Int, upperLimit: Int, target: Int, ints: Vector[Int]): Option[(Int, Int)] = {

@@ -1,9 +1,11 @@
 package intcode
 
+import scala.collection.immutable.Queue
+
 case class State(
   index: Int,
   ints: Vector[Int],
-  input: List[Int],
-  output: List[Int] = List(),
+  input: Queue[Int],
+  output: Queue[Int] = Queue(),
   finished: Boolean = false
 )

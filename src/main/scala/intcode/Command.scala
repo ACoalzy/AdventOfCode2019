@@ -49,13 +49,14 @@ case class Equals(s: State, modes: Seq[ParameterMode] = Seq()) extends MathsComm
 
 case class Input(s: State, modes: Seq[ParameterMode] = Seq()) extends Command {
   val size = 2
+  private val (input, remaining) = s.input.dequeue
 
   override protected def newInts(i: Int, ints: Vector[Int]): Vector[Int] = {
-    ints.updated(m(0).index(ints)(i + 1), s.input.head)
+    ints.updated(m(0).index(ints)(i + 1), input)
   }
 
   override def run(): State =
-    State(newIndex(s.index), newInts(s.index, s.ints), s.input.drop(1), s.output)
+    State(newIndex(s.index), newInts(s.index, s.ints), remaining, s.output)
 }
 
 case class Output(s: State, modes: Seq[ParameterMode] = Seq()) extends Command {
@@ -63,7 +64,7 @@ case class Output(s: State, modes: Seq[ParameterMode] = Seq()) extends Command {
 
   override def run(): State = {
     val value = m(0).value(s.ints)(s.index + 1)
-    State(newIndex(s.index), newInts(s.index, s.ints), s.input.drop(1), value :: s.output)
+    State(newIndex(s.index), newInts(s.index, s.ints), s.input, s.output.enqueue(value))
   }
 }
 
