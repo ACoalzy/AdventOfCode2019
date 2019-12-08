@@ -2,6 +2,8 @@ package exercises
 
 import util.DayN
 
+import scala.collection.immutable.Queue
+
 object Day6 extends DayN {
   override val num = 6
 
@@ -13,18 +15,23 @@ object Day6 extends DayN {
   }
 
   def stepsToSanta(orbitMap: Map[String, List[String]], orbittingMap: Map[String, String]) = {
-    def navigate(current: String, target: String, depth: Int, history: Set[String]): Option[Int] = {
-      if (current == target) Some(depth)
-      else {
-        val orbits = orbitMap.getOrElse(current, Nil)
-        val nexts = orbittingMap.get(current).map(_ :: orbits).getOrElse(orbits).toSet.diff(history)
-        nexts.flatMap(n => navigate(n, target, depth + 1, history + n)).minOption
+    case class SearchStep(s: String, depth: Int, history: Set[String])
+    @annotation.tailrec
+    def bfs(target: String, remaining: Queue[SearchStep]): Int = {
+      remaining.dequeueOption match {
+        case Some((v, q)) if v.s == target => v.depth
+        case Some((v, q)) =>
+          val orbits = orbitMap.getOrElse(v.s, Nil)
+          val nexts = orbittingMap.get(v.s).map(_ :: orbits).getOrElse(orbits).toSet.diff(v.history)
+          val nextSteps = nexts.map(s => SearchStep(s, v.depth + 1, v.history + s))
+          bfs(target, q ++ nextSteps)
+        case None => 0
       }
     }
 
     val start = orbittingMap("YOU")
     val finish = orbittingMap("SAN")
-    navigate(start, finish, 0, Set(start))
+    bfs(finish, Queue(SearchStep(start, 0, Set(start))))
   }
 
   val orbits = lines.map(_.split("\\)")).map(a => (a(0), a(1)))
