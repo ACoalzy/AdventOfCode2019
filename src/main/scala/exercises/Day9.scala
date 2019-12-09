@@ -1,12 +1,12 @@
 package exercises
 
-import intcode._
+import intcode.{IntCode, State}
 import util.DayN
 
 import scala.collection.immutable.Queue
 
-object Day5 extends DayN {
-  override val num = 5
+object Day9 extends DayN {
+  override val num = 9
 
   def intCodeRunner(ints: Map[Long, Long], inputs: Queue[Long]): State = {
     @annotation.tailrec
@@ -23,5 +23,6 @@ object Day5 extends DayN {
   val input: Map[Long, Long] = IntCode.parseInput(lines.head)
 
   part1(intCodeRunner(input, Queue(1L)).output.last)
-  part2(intCodeRunner(input, Queue(5L)).output.last)
+  part2(intCodeRunner(input, Queue(2L)).output)
+
 }

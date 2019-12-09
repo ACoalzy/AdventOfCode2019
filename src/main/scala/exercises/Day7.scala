@@ -21,32 +21,32 @@ object Day7 extends DayN {
     loop(state)
   }
 
-  def maxOutput(ints: Vector[Int], phases: List[Int])(f: (Vector[Int], List[Int]) => Int) = {
+  def maxOutput(ints: Map[Long, Long], phases: List[Long])(f: (Map[Long, Long], List[Long]) => Long) = {
     phases.permutations.map(l => f(ints, l)).max
   }
 
-  protected def chainAmplifiersOnce(ints: Vector[Int], phases: List[Int]): Int = {
-    phases.foldLeft(0) { case (in, phase) =>
-      intCodeRunner(State(0, ints, Queue(phase, in))).output.head
+  protected def chainAmplifiersOnce(ints: Map[Long, Long], phases: List[Long]): Long = {
+    phases.foldLeft(0L) { case (in, phase) =>
+      intCodeRunner(State(0L, ints, Queue(phase, in))).output.head
     }
   }
 
-  protected def chainAmplifiers(ints: Vector[Int], phases: List[Int]): Int = {
-    val states = phases.map(p => State(0, ints, Queue(p)))
+  protected def chainAmplifiers(ints: Map[Long, Long], phases: List[Long]): Long = {
+    val states = phases.map(p => State(0L, ints, Queue(p)))
 
-    def loop(input: Int, states: List[State]): Int = states match {
+    def loop(input: Long, states: List[State]): Long = states match {
       case h :: t =>
         val next = intCodeRunner(h.copy(input = h.input.enqueue(input)))
         if (next.finished) input
         else loop(next.output.last, t :+ next)
-      case _ => 0
+      case _ => 0L
     }
 
     loop(0, states)
   }
 
-  val input: Vector[Int] = lines.head.split(",").map(_.toInt).toVector
+  val input: Map[Long, Long] = IntCode.parseInput(lines.head)
 
-  part1(maxOutput(input, List(0, 1, 2, 3, 4))(chainAmplifiersOnce))
-  part2(maxOutput(input, List(9, 8, 7, 6, 5))(chainAmplifiers))
+  part1(maxOutput(input, List(0L, 1L, 2L, 3L, 4L))(chainAmplifiersOnce))
+  part2(maxOutput(input, List(9L, 8L, 7L, 6L, 5L))(chainAmplifiers))
 }

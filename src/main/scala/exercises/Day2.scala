@@ -8,19 +8,19 @@ import scala.collection.immutable.Queue
 object Day2 extends DayN {
   override val num = 2
 
-  def intCodeRunner(noun: Int, verb: Int, ints: Vector[Int]): Int = {
+  def intCodeRunner(noun: Long, verb: Long, ints: Map[Long, Long]): Long = {
     @annotation.tailrec
-    def loop(state: State): Vector[Int] = {
+    def loop(state: State): Map[Long, Long] = {
       IntCode.step(state) match {
         case s if s.finished => state.ints
         case s => loop(s)
       }
     }
 
-    loop(State(0, setupNounAndVerb(noun, verb, ints), Queue())).head
+    loop(State(0, setupNounAndVerb(noun, verb, ints), Queue()))(0)
   }
 
-  def nounVerbFinder(lowerLimit: Int, upperLimit: Int, target: Int, ints: Vector[Int]): Option[(Int, Int)] = {
+  def nounVerbFinder(lowerLimit: Long, upperLimit: Long, target: Long, ints: Map[Long, Long]): Option[(Long, Long)] = {
     val range = lowerLimit.to(upperLimit)
     val results = for {
       noun <- range
@@ -30,10 +30,10 @@ object Day2 extends DayN {
     results.find(_._2 == target).map(_._1)
   }
 
-  private def setupNounAndVerb(noun: Int, verb: Int, ints: Vector[Int]): Vector[Int] =
+  private def setupNounAndVerb(noun: Long, verb: Long, ints: Map[Long, Long]): Map[Long, Long] =
     ints.updated(1, noun).updated(2, verb)
 
-  val input: Vector[Int] = lines.head.split(",").map(_.toInt).toVector
+  val input: Map[Long, Long] = IntCode.parseInput(lines.head)
 
   part1(intCodeRunner(12, 2, input))
 
