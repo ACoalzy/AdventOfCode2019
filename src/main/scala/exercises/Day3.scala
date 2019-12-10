@@ -17,13 +17,16 @@ object Day3 extends DayN {
       (stop, acc ::: points)
     }._2
 
-  def closestIntersectionDistance(linePoints: List[List[Point]]): Option[Int] =
-    overlaps(linePoints.map(_.toSet)).map(_.manHattanDist(centralPort)).minOption
+  def closestIntersectionDistance(linePoints: List[List[Point]]): Option[Int] = {
+    val intersections = overlaps(linePoints.map(_.toSet)).map(_.manHattanDist(centralPort))
+    if (intersections.isEmpty) None else Some(intersections.min)
+  }
 
   def earliestIntersection(linePoints: List[List[Point]]): Option[Int] = {
     val linePointDistanceMap = linePoints.map(_.zipWithIndex.map(pd => (pd._1, pd._2 + 1)).reverse.toMap)
     val intersectionLocations = overlaps(linePointDistanceMap.map(_.keySet))
-    intersectionLocations.map(p => linePointDistanceMap.map(_(p)).sum).minOption
+    val summedIntersectionLocations = intersectionLocations.map(p => linePointDistanceMap.map(_(p)).sum)
+    if (summedIntersectionLocations.isEmpty) None else Some(summedIntersectionLocations.min)
   }
 
   private def parseInstruction(s: String) = Instruction(Direction.fromChar(s.head), s.drop(1).toInt)

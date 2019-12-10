@@ -35,7 +35,7 @@ object Day6 extends DayN {
   }
 
   val orbits = lines.map(_.split("\\)")).map(a => (a(0), a(1)))
-  val orbitMap = orbits.groupBy(_._1).mapValues(_.map(_._2)).toMap
+  val orbitMap = orbits.groupBy(_._1).mapValues(_.map(_._2))
   val orbittingMap = orbits.map(a => a._2 -> a._1).toMap
 
   part1(countOrbits(orbitMap))
