@@ -7,6 +7,6 @@ case class State(
   ints: Map[Long, Long],
   input: Queue[Long],
   output: Queue[Long] = Queue(),
-  finished: Boolean = false,
+  status: Status = Running,
   relativeBase: Long = 0L
 )

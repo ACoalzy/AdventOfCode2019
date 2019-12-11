@@ -8,41 +8,29 @@ import scala.collection.immutable.Queue
 object Day7 extends DayN {
   override val num = 7
 
-  def intCodeRunner(state: State): State = {
-    @annotation.tailrec
-    def loop(state: State): State = {
-      IntCode.step(state) match {
-        case s if s.finished => s
-        case s if state.output.size < s.output.size => s
-        case s => loop(s)
-      }
-    }
-
-    loop(state)
-  }
-
   def maxOutput(ints: Map[Long, Long], phases: List[Long])(f: (Map[Long, Long], List[Long]) => Long) = {
     phases.permutations.map(l => f(ints, l)).max
   }
 
   protected def chainAmplifiersOnce(ints: Map[Long, Long], phases: List[Long]): Long = {
     phases.foldLeft(0L) { case (in, phase) =>
-      intCodeRunner(State(0L, ints, Queue(phase, in))).output.head
+      IntCode.run(State(0L, ints, Queue(phase, in))).output.head
     }
   }
 
   protected def chainAmplifiers(ints: Map[Long, Long], phases: List[Long]): Long = {
     val states = phases.map(p => State(0L, ints, Queue(p)))
 
-    def loop(input: Long, states: List[State]): Long = states match {
-      case h :: t =>
-        val next = intCodeRunner(h.copy(input = h.input.enqueue(input)))
-        if (next.finished) input
-        else loop(next.output.last, t :+ next)
+    @annotation.tailrec
+    def loop(input: Long, states: Queue[State]): Long = states.dequeue match {
+      case (h, _) if h.status == Finished => input
+      case (h, t) =>
+        val next = IntCode.run(h.copy(input = h.input.enqueue(input)))
+        loop(next.output.last, t.enqueue(next))
       case _ => 0L
     }
 
-    loop(0, states)
+    loop(0, Queue() ++ states)
   }
 
   val input: Map[Long, Long] = IntCode.parseInput(lines.head)

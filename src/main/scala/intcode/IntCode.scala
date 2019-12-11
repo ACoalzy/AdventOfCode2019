@@ -3,6 +3,19 @@ package intcode
 object IntCode {
   def parseInput(s: String): Map[Long, Long] = s.split(",").map(_.toLong).zipWithIndex.map(p => p._2.toLong -> p._1).toMap
 
+  def run(state: State): State = {
+    @annotation.tailrec
+    def loop(state: State): State = {
+      val s = IntCode.step(state)
+      s.status match {
+        case Running => loop(s)
+        case _ => s
+      }
+    }
+
+    loop(state)
+  }
+
   def step(state: State): State = {
     val code = state.ints(state.index)
     val op = code % 100
