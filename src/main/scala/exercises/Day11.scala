@@ -1,20 +1,12 @@
 package exercises
 
 import intcode._
-import util.DayN
+import util.{DayN, Display, Point}
 
 import scala.collection.immutable.Queue
 
 object Day11 extends DayN {
   override val num = 11
-
-  case class Point(x: Int, y: Int) {
-    def +(p2: Point) = Point(x + p2.x, y + p2.y)
-
-    def rotate(dir: Long) = if (dir == 1L) Point(y, -x) else Point(-y, x)
-  }
-
-  val input: Map[Long, Long] = IntCode.parseInput(lines.head)
 
   def robotPainter(colour: Long, state: State): Map[Point, Long] = {
     val start = Point(0, 0)
@@ -47,6 +39,10 @@ object Day11 extends DayN {
     matrix.map(_.mkString("")).reverse.mkString("\n")
   }
 
+  val input: Map[Long, Long] = IntCode.parseInput(lines.head)
+
   part1(robotPainter(0L, State(0, input, Queue())).size)
-  part2("\n" + displayHull(robotPainter(1L, State(0, input, Queue()))))
+
+  val result = robotPainter(1L, State(0, input, Queue()))
+  part2("\n" + Display.displayMap(result)(l => if (l == 1L) '#' else '.'))
 }
