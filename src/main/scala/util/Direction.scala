@@ -10,6 +10,7 @@ object Direction {
     case 'L' => Left
     case 'R' => Right
   }
+  def all: Set[Direction] = Set(Left, Right, Up, Down)
 }
 case object Left extends Direction { val mutation = Point(-1, 0) }
 case object Right extends Direction { val mutation = Point(1, 0) }
