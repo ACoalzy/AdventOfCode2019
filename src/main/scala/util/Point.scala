@@ -21,4 +21,5 @@ case class Point(x: Int, y: Int) {
 
     loop(this, Nil).reverse
   }
+  def neighbours: Set[Point] = Direction.all.map(_.mutation + this)
 }
