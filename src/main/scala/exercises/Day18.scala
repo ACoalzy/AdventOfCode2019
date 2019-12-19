@@ -1,6 +1,6 @@
 package exercises
 
-import util.{DayN, Point, Timer, Up}
+import util.{DayN, Point}
 
 import scala.collection.immutable.SortedMap
 
