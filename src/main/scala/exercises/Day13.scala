@@ -1,14 +1,15 @@
 package exercises
 
 import intcode.{Finished, IntCode, State}
-import util.{DayN, Point}
+import util.DayN
+import util.geometry.point.Point2D
 
 import scala.collection.immutable.Queue
 
 object Day13 extends DayN {
   override val num = 13
 
-  case class Game(state: State, board: Map[Point, Tile])
+  case class Game(state: State, board: Map[Point2D, Tile])
 
   sealed trait Tile { def c: Char }
   case object Empty extends Tile { val c = ' ' }
@@ -50,17 +51,17 @@ object Day13 extends DayN {
     loop(step(Game(State(0, intCode, Queue()), Map())))
   }
 
-  private def parseTile(ls: List[Long]): (Point, Tile) = {
+  private def parseTile(ls: List[Long]): (Point2D, Tile) = {
     val x = ls(0)
     val y = ls(1)
     val t = ls(2)
     val tile = if (x == -1) Score(t) else Tile.parse(t)
-    Point(x.toInt, y.toInt) -> tile
+    Point2D(x.toInt, y.toInt) -> tile
   }
 
   val input: Map[Long, Long] = IntCode.parseInput(lines.head)
   val free: Map[Long, Long] = input + (0L -> 2L)
 
   part1(playGame(input).board.values.count(_ == Block))
-  part2(playGame(free).board(Point(-1, 0)))
+  part2(playGame(free).board(Point2D(-1, 0)))
 }

@@ -1,38 +1,40 @@
 package exercises
 
-import util.{DayN, Direction, Point}
+import util.DayN
+import util.geometry.direction.Direction2D
+import util.geometry.point.Point2D
 
 object Day3 extends DayN {
   override val num = 3
 
-  private val centralPort = Point(0, 0)
+  private val centralPort = Point2D(0, 0)
 
-  case class Instruction(direction: Direction, distance: Int) {
-    lazy val asPoint = direction.mutation * distance
+  case class Instruction(direction: Direction2D, distance: Int) {
+    lazy val asPoint2D = direction.mutation * distance
   }
 
-  def navigatePath(start: Point)(instructions: List[Instruction]): List[Point] =
-    instructions.foldLeft((start, List.empty[Point])) { case ((p, acc), instruction) =>
-      val (stop, points) = instructionToPoints(p, instruction)
+  def navigatePath(start: Point2D)(instructions: List[Instruction]): List[Point2D] =
+    instructions.foldLeft((start, List.empty[Point2D])) { case ((p, acc), instruction) =>
+      val (stop, points) = instructionToPoint2Ds(p, instruction)
       (stop, acc ::: points)
     }._2
 
-  def closestIntersectionDistance(linePoints: List[List[Point]]): Option[Int] = {
-    val intersections = overlaps(linePoints.map(_.toSet)).map(_.manHattanDist(centralPort))
+  def closestIntersectionDistance(linePoint2Ds: List[List[Point2D]]): Option[Int] = {
+    val intersections = overlaps(linePoint2Ds.map(_.toSet)).map(_.manHattanDist(centralPort))
     if (intersections.isEmpty) None else Some(intersections.min)
   }
 
-  def earliestIntersection(linePoints: List[List[Point]]): Option[Int] = {
-    val linePointDistanceMap = linePoints.map(_.zipWithIndex.map(pd => (pd._1, pd._2 + 1)).reverse.toMap)
-    val intersectionLocations = overlaps(linePointDistanceMap.map(_.keySet))
-    val summedIntersectionLocations = intersectionLocations.map(p => linePointDistanceMap.map(_(p)).sum)
+  def earliestIntersection(linePoint2Ds: List[List[Point2D]]): Option[Int] = {
+    val linePoint2DDistanceMap = linePoint2Ds.map(_.zipWithIndex.map(pd => (pd._1, pd._2 + 1)).reverse.toMap)
+    val intersectionLocations = overlaps(linePoint2DDistanceMap.map(_.keySet))
+    val summedIntersectionLocations = intersectionLocations.map(p => linePoint2DDistanceMap.map(_(p)).sum)
     if (summedIntersectionLocations.isEmpty) None else Some(summedIntersectionLocations.min)
   }
 
-  private def parseInstruction(s: String) = Instruction(Direction.fromChar(s.head), s.drop(1).toInt)
+  private def parseInstruction(s: String) = Instruction(Direction2D.fromChar(s.head), s.drop(1).toInt)
 
-  private def instructionToPoints(start: Point, ins: Instruction): (Point, List[Point]) = {
-    val destination = start + ins.asPoint
+  private def instructionToPoint2Ds(start: Point2D, ins: Instruction): (Point2D, List[Point2D]) = {
+    val destination = start + ins.asPoint2D
     val range = start.to(destination, ins.direction)
     (destination, range)
   }
@@ -41,8 +43,8 @@ object Day3 extends DayN {
     sets.headOption.map(_.filter(p => sets.forall(_.contains(p)))).getOrElse(Set())
 
   private val lineInstructions = lines.map(_.split(",")).map(_.map(parseInstruction).toList)
-  private val linePoints = lineInstructions.map(navigatePath(centralPort))
-  part1(closestIntersectionDistance(linePoints))
-  part2(earliestIntersection(linePoints))
+  private val linePoint2Ds = lineInstructions.map(navigatePath(centralPort))
+  part1(closestIntersectionDistance(linePoint2Ds))
+  part2(earliestIntersection(linePoint2Ds))
 
 }

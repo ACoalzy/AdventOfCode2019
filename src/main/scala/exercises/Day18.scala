@@ -1,13 +1,14 @@
 package exercises
 
-import util.{DayN, Point}
+import util.DayN
+import util.geometry.point.Point2D
 
 import scala.collection.immutable.SortedMap
 
 object Day18 extends DayN {
   override val num = 18
 
-  case class Tunnels(starts: Set[Point], path: Set[Point], walls: Set[Point], keys: Map[Point, Char], doors: Map[Point, Char])
+  case class Tunnels(starts: Set[Point2D], path: Set[Point2D], walls: Set[Point2D], keys: Map[Point2D, Char], doors: Map[Point2D, Char])
 
   case class Key(distances: Map[Char, Int], keysRequired: Map[Char, Set[Char]])
 
@@ -74,23 +75,23 @@ object Day18 extends DayN {
 
   def mapTunnels(tunnels: Tunnels): Set[Data] = {
 
-    case class LoopState(p: Point, trail: Set[Point] = Set())
+    case class LoopState(p: Point2D, trail: Set[Point2D] = Set())
 
     val neighbours = tunnels.path.map(p => p -> p.neighbours.intersect(tunnels.path)).toMap
 
-    def keyRequirements(state: LoopState, acc: Map[Point, Set[Char]]): Option[Set[Char]] = {
+    def keyRequirements(state: LoopState, acc: Map[Point2D, Set[Char]]): Option[Set[Char]] = {
       if (tunnels.keys.contains(state.p)) {
         val doors = tunnels.doors.filterKeys(state.trail.contains)
         Some(doors.values.map(d => d.toLower).toSet)
       } else None
     }
 
-    def keyDistance(state: LoopState, acc: Map[Point, Int]): Option[Int] =
+    def keyDistance(state: LoopState, acc: Map[Point2D, Int]): Option[Int] =
       if (tunnels.keys.contains(state.p)) Some(state.trail.size)
       else None
 
     @annotation.tailrec
-    def bfs[A](states: List[LoopState], history: Set[Point] = Set(), result: Map[Point, A] = Map.empty[Point, A])(f: (LoopState, Map[Point, A]) => Option[A]): Map[Point, A] =
+    def bfs[A](states: List[LoopState], history: Set[Point2D] = Set(), result: Map[Point2D, A] = Map.empty[Point2D, A])(f: (LoopState, Map[Point2D, A]) => Option[A]): Map[Point2D, A] =
       states match {
         case state :: t =>
           if (history.contains(state.p)) bfs(t, history, result)(f)
@@ -118,7 +119,7 @@ object Day18 extends DayN {
     val points = for {
       (r, y) <- lines.zipWithIndex
       (elem, x) <- r.zipWithIndex
-    } yield Point(x, y) -> elem
+    } yield Point2D(x, y) -> elem
 
     val starts = points.filter(_._2 == '@').map(_._1).toSet
     val path = points.filter(_._2 != '#').map(_._1).toSet
@@ -131,7 +132,7 @@ object Day18 extends DayN {
 
   private def modifyInput(tunnels: Tunnels): Tunnels = {
     val start = tunnels.starts.head
-    val newStarts = start + Point(1, 1) :: start + Point(-1, -1) :: start + Point(1, -1) :: start + Point(-1, 1) :: Nil
+    val newStarts = start + Point2D(1, 1) :: start + Point2D(-1, -1) :: start + Point2D(1, -1) :: start + Point2D(-1, 1) :: Nil
     val newWalls = start.neighbours + start
     tunnels.copy(starts = newStarts.toSet, path = tunnels.path diff newWalls, walls = tunnels.walls ++ newWalls)
   }

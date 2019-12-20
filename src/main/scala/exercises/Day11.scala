@@ -1,19 +1,20 @@
 package exercises
 
 import intcode._
-import util.{DayN, Display, Point}
+import util.geometry.point.Point2D
+import util.{DayN, Display}
 
 import scala.collection.immutable.Queue
 
 object Day11 extends DayN {
   override val num = 11
 
-  def robotPainter(colour: Long, state: State): Map[Point, Long] = {
-    val start = Point(0, 0)
-    val direction = Point(0, 1)
+  def robotPainter(colour: Long, state: State): Map[Point2D, Long] = {
+    val start = Point2D(0, 0)
+    val direction = Point2D(0, 1)
 
     @annotation.tailrec
-    def loop(colour: Long, s: State, location: Point, direction: Point, hull: Map[Point, Long]): Map[Point, Long] = {
+    def loop(colour: Long, s: State, location: Point2D, direction: Point2D, hull: Map[Point2D, Long]): Map[Point2D, Long] = {
       val newState = IntCode.run(s.copy(input = s.input.enqueue(colour), output = Queue()))
       newState.status match {
         case Finished => hull
@@ -27,7 +28,7 @@ object Day11 extends DayN {
     loop(colour, state, start, direction, Map())
   }
 
-  def displayHull(hull: Map[Point, Long]): String = {
+  def displayHull(hull: Map[Point2D, Long]): String = {
     val minX = hull.keySet.map(_.x).min
     val maxX = hull.keySet.map(_.x).max
     val minY = hull.keySet.map(_.y).min

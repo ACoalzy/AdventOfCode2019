@@ -1,7 +1,8 @@
 package exercises
 
 import intcode.{IntCode, State}
-import util.{DayN, Point, Timer}
+import util.DayN
+import util.geometry.point.Point2D
 
 import scala.collection.immutable.Queue
 
@@ -10,34 +11,34 @@ object Day15 extends DayN {
 
   sealed trait Direction {
     def dir: Long
-    def vec: Point
+    def vec: Point2D
   }
 
   case object North extends Direction {
     val dir: Long = 1
-    val vec = Point(0, 1)
+    val vec = Point2D(0, 1)
   }
 
   case object South extends Direction {
     val dir: Long = 2
-    val vec = Point(0, -1)
+    val vec = Point2D(0, -1)
   }
 
   case object East extends Direction {
     val dir: Long = 3
-    val vec = Point(1, 0)
+    val vec = Point2D(1, 0)
   }
 
   case object West extends Direction {
     val dir: Long = 4
-    val vec = Point(-1, 0)
+    val vec = Point2D(-1, 0)
   }
 
   object Direction {
     val all: Set[Direction] = Set(North, South, East, West)
   }
 
-  case class Route(p: Point, dirs: List[Direction])
+  case class Route(p: Point2D, dirs: List[Direction])
 
   def wanderToOxygen(state: State): Option[List[Direction]] =
     navigate(state)((r, _) => r.map(_.dirs))(_ == 2L)
@@ -45,9 +46,9 @@ object Day15 extends DayN {
   def wanderFully(state: State): Iterable[List[Direction]] =
     navigate(state)((_, m) => m.values)(_ => false)
 
-  private def navigate[A](state: State)(f: (Option[Route], Map[Point, List[Direction]]) => A)(earlyExit: Long => Boolean): A = {
+  private def navigate[A](state: State)(f: (Option[Route], Map[Point2D, List[Direction]]) => A)(earlyExit: Long => Boolean): A = {
     @annotation.tailrec
-    def loop(s: State, routeQueue: Queue[Route], history: Map[Point, List[Direction]]): A =
+    def loop(s: State, routeQueue: Queue[Route], history: Map[Point2D, List[Direction]]): A =
       routeQueue.dequeueOption match {
         case None => f(None, history)
         case Some((route, remaining)) =>
@@ -66,13 +67,13 @@ object Day15 extends DayN {
           }
       }
 
-    loop(state, Queue() ++ Direction.all.map(d => Route(d.vec, List(d))), Map(Point(0, 0) -> Nil))
+    loop(state, Queue() ++ Direction.all.map(d => Route(d.vec, List(d))), Map(Point2D(0, 0) -> Nil))
   }
 
   private def moveSteps(state: State, directions: List[Direction]): State =
     IntCode.run(state.copy(input = state.input ++ directions.map(_.dir)))
 
-  private def point(directions: List[Direction]): Point = directions.foldLeft(Point(0, 0))((b, d) => b + d.vec)
+  private def point(directions: List[Direction]): Point2D = directions.foldLeft(Point2D(0, 0))((b, d) => b + d.vec)
 
   val input: Map[Long, Long] = IntCode.parseInput(lines.head)
   val init = State(0, input, Queue())

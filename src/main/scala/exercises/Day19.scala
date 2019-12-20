@@ -1,7 +1,7 @@
 package exercises
 
 import intcode.{IntCode, State}
-import util.{DayN, Display, Point}
+import util.DayN
 
 import scala.collection.immutable.Queue
 

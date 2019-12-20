@@ -1,8 +1,10 @@
 package util
 
+import util.geometry.point.Point2D
+
 object Display {
 
-  def displayMap[A](map: Map[Point, A])(f: A => Char): String = {
+  def displayMap[A](map: Map[Point2D, A])(f: A => Char): String = {
     val minX = map.keySet.map(_.x).min
     val maxX = map.keySet.map(_.x).max
     val minY = map.keySet.map(_.y).min

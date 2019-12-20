@@ -1,7 +1,10 @@
 package exercises
 
 import intcode.{IntCode, State}
-import util.{DayN, Direction, Point}
+import util.DayN
+import util.geometry.direction
+import util.geometry.direction.{Direction2D}
+import util.geometry.point.Point2D
 
 import scala.collection.immutable.Queue
 
@@ -11,16 +14,16 @@ object Day17 extends DayN {
   val robotValues = Set('^', 'v', '>', '<', 'X').map(_.toLong)
   val scaffoldValues = robotValues + 35L
 
-  case class ScaffoldMap(robot: Robot, scaffolds: Set[Point])
+  case class ScaffoldMap(robot: Robot, scaffolds: Set[Point2D])
 
-  case class Robot(dir: Direction, loc: Point)
+  case class Robot(dir: Direction2D, loc: Point2D)
 
   case class Movements(routine: List[String], functions: List[List[String]])
 
   def intersections(state: State): Int = {
     val view = IntCode.run(state)
     val map = parseview(view.output.toList)
-    val intersections = map.scaffolds.filter(p => Direction.all.forall(d => map.scaffolds.contains(p + d.mutation)))
+    val intersections = map.scaffolds.filter(p => Direction2D.all.forall(d => map.scaffolds.contains(p + d.mutation)))
     intersections.map(p => p.x * p.y).sum
   }
 
@@ -38,7 +41,7 @@ object Day17 extends DayN {
     val map = parseview(view.output.toList)
 
     @annotation.tailrec
-    def loop(dir: Point, loc: Point, count: Int, route: List[String]): List[String] = {
+    def loop(dir: Point2D, loc: Point2D, count: Int, route: List[String]): List[String] = {
       lazy val forwards = loc + dir
       lazy val right = loc + dir.rotate(-1L)
       lazy val left = loc + dir.rotate(1L)
@@ -58,17 +61,17 @@ object Day17 extends DayN {
       (row, y) <- lines.zipWithIndex
       (elem, x) <- row.zipWithIndex
       if scaffoldValues.contains(elem)
-    } yield elem -> Point(x, y)
+    } yield elem -> Point2D(x, y)
     val map = scaffolds.groupBy(_._1)
     val robot = robotValues.flatMap(map.get).flatten.head
     ScaffoldMap(Robot(parseDir(robot._1), robot._2), map.values.flatten.map(_._2).toSet)
   }
 
-  private def parseDir(value: Long): Direction = value.toChar match {
-    case '^' => util.Up
-    case 'v' => util.Down
-    case '>' => util.Left
-    case '<' => util.Right
+  private def parseDir(value: Long): Direction2D = value.toChar match {
+    case '^' => direction.Up
+    case 'v' => direction.Down
+    case '>' => direction.Left
+    case '<' => direction.Right
   }
 
   private def routeToParts(route: List[String], lengthLimit: Int): List[Movements] = {
