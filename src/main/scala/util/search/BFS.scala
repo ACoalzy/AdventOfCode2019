@@ -4,6 +4,8 @@ import scala.collection.mutable
 
 object BFS {
 
+  def distance[A](a: A, trail: Vector[A]): Option[Int] = Some(trail.size)
+
   def fullSearch[A, B](start: A)(neighbours: A => Set[A])(f: (A, Vector[A]) => Option[B]) =
     doSearch(start)(_ => false)(neighbours)(f)
 
@@ -29,8 +31,10 @@ object BFS {
           ns.foreach(n => queue.enqueue(LoopState(n, state.trail :+ state.a)))
           history += state.a
           f(state.a, state.trail).foreach(b => acc += (state.a -> b))
-          if (exit(state.a)) acc.toMap
-          else loop()
+          if (exit(state.a))
+            acc.toMap
+          else
+            loop()
       }
     }
 
