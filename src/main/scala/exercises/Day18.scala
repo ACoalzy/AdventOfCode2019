@@ -2,6 +2,7 @@ package exercises
 
 import util.DayN
 import util.geometry.point.Point2D
+import util.search.BFS
 
 import scala.collection.immutable.SortedMap
 
@@ -79,35 +80,19 @@ object Day18 extends DayN {
 
     val neighbours = tunnels.path.map(p => p -> p.neighbours.intersect(tunnels.path)).toMap
 
-    def keyRequirements(state: LoopState, acc: Map[Point2D, Set[Char]]): Option[Set[Char]] = {
-      if (tunnels.keys.contains(state.p)) {
-        val doors = tunnels.doors.filterKeys(state.trail.contains)
-        Some(doors.values.map(d => d.toLower).toSet)
-      } else None
-    }
-
-    def keyDistance(state: LoopState, acc: Map[Point2D, Int]): Option[Int] =
-      if (tunnels.keys.contains(state.p)) Some(state.trail.size)
+    def keyRequirements(p: Point2D, trail: Vector[Point2D]): Option[Set[Char]] =
+      if (tunnels.keys.contains(p)) Some(trail.flatMap(d => tunnels.doors.get(d).map(_.toLower)).toSet)
       else None
 
-    @annotation.tailrec
-    def bfs[A](states: List[LoopState], history: Set[Point2D] = Set(), result: Map[Point2D, A] = Map.empty[Point2D, A])(f: (LoopState, Map[Point2D, A]) => Option[A]): Map[Point2D, A] =
-      states match {
-        case state :: t =>
-          if (history.contains(state.p)) bfs(t, history, result)(f)
-          else {
-            val ns = neighbours(state.p).diff(history).toList
-            bfs(t ++ ns.map(n => LoopState(n, state.trail + state.p)), history + state.p, f(state, result).map(a => result + (state.p -> a)).getOrElse(result))(f)
-          }
-        case Nil => result
-      }
+    def keyDistance(p: Point2D, trail: Vector[Point2D]): Option[Int] =
+      if (tunnels.keys.contains(p)) Some(trail.size) else None
 
     tunnels.starts.map(start => {
-      val keys: Map[Char, Set[Char]] = bfs(List(LoopState(start)))(keyRequirements).map {
+      val keys: Map[Char, Set[Char]] = BFS.fullSearch(start)(p => neighbours(p))(keyRequirements).map {
         case (k, v) => tunnels.keys(k) -> v
       }
       val keyDistances: Map[(Char, Char), Int] = (tunnels.keys.keySet + start).flatMap(p => {
-        bfs(List(LoopState(p)))(keyDistance).map {
+        BFS.fullSearch(p)(p => neighbours(p))(keyDistance).map {
           case (k, v) => (tunnels.keys.getOrElse(p, '@'), tunnels.keys(k)) -> v
         }
       }).toMap
