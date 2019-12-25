@@ -1,6 +1,6 @@
 package util.geometry.point
 
-import util.geometry.direction.Direction3D
+import util.geometry.direction.{Direction2D, Direction3D}
 
 case class Point3D(x: Int, y: Int, z: Int) {
   private def mutate(p: Point3D)(op: (Int, Int) => Int): Point3D = Point3D(op(x, p.x), op(y, p.y), op(z, p.z))
@@ -43,4 +43,5 @@ case class Point3D(x: Int, y: Int, z: Int) {
   }
 
   def neighbours: Set[Point3D] = Direction3D.all.map(_.mutation + this)
+  def neighbours2d: Set[Point3D] = Direction2D.all.map(_.mutation.addZ(0) + this)
 }
