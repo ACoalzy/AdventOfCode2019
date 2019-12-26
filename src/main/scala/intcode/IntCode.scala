@@ -16,6 +16,12 @@ object IntCode {
     loop(state)
   }
 
+  def asciiDebugRun(state: State): State = {
+    val newState = IntCode.run(state)
+    println(newState.output.map(_.toChar).mkString)
+    newState
+  }
+
   def step(state: State): State = {
     val code = state.ints(state.index)
     val op = code % 100
