@@ -21,20 +21,16 @@ object Dijkstra {
 
     @annotation.tailrec
     def loop(): Map[A, Int] = {
-      if (queue.isEmpty)
-        acc.toMap
+      if (queue.isEmpty) acc.toMap
       else {
         val state = queue.dequeue()
-        if (acc.get(state.a).exists(_ <= state.dist))
-          loop()
+        if (acc.get(state.a).exists(_ <= state.dist)) loop()
         else {
           val es = edges(state.a).toList
           es.foreach(n => queue.enqueue(LoopState(n.to, state.trail :+ state.a, state.dist + n.weight)))
           acc += state.a -> state.dist
-          if (exit(state.a))
-            acc.toMap
-          else
-            loop()
+          if (exit(state.a)) acc.toMap
+          else loop()
         }
       }
     }

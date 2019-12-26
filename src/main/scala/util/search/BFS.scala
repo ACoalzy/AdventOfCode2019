@@ -22,19 +22,15 @@ object BFS {
     @annotation.tailrec
     def loop(): Map[A, B] = {
       queue.dequeueFirst(_ => true) match {
-        case None =>
-          acc.toMap
-        case Some(state) if history.contains(state.a) =>
-          loop()
+        case None => acc.toMap
+        case Some(state) if history.contains(state.a) => loop()
         case Some(state) =>
           val ns = neighbours(state.a).diff(history).toList
           ns.foreach(n => queue.enqueue(LoopState(n, state.trail :+ state.a)))
           history += state.a
           f(state.a, state.trail).foreach(b => acc += (state.a -> b))
-          if (exit(state.a))
-            acc.toMap
-          else
-            loop()
+          if (exit(state.a)) acc.toMap
+          else loop()
       }
     }
 
